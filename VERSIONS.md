@@ -1,0 +1,28 @@
+# angular-gulp
+
+## Next Version
+### Features
+### Fixes
+### Deprecations
+
+## Version 1.0.2
+### Features
+- log errors correctly by building multiple dapps
+
+### Fixes
+### Deprecations
+
+## Version 1.0.1
+### Features
+- use @evan.network for package name and dependencies scopes
+- add .npmignore
+- rename *contractus* variables to *evan*
+- rename bcc-core bundle to bcc
+  - rename BCCCore to CoreRuntime
+  - rename BCCProfile to ProfileRuntime
+  - rename BCCBC to BCRuntime
+- add code documentation
+- remove angular-bc
+
+## Version 0.9.0
+- initial version
