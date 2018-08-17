@@ -2,10 +2,12 @@
 
 ## Next Version
 ### Features
-- correct installation documentation
-
 ### Fixes
 ### Deprecations
+
+## Version 1.1.0
+### Features
+- correct installation documentation
 
 ## Version 1.0.2
 ### Features
