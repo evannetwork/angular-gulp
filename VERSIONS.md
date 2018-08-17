@@ -2,6 +2,8 @@
 
 ## Next Version
 ### Features
+- correct installation documentation
+
 ### Fixes
 ### Deprecations
 
