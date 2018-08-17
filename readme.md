@@ -39,5 +39,5 @@ doc-build gulp --cwd . --gulpfile node_modules/@evan.network/angular-gulp/docume
 
 ## Installation
 ```sh
-npm i angular-gulp
+npm i @evan.network/ui-angular-gulp
 ```

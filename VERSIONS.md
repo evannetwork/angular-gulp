@@ -5,6 +5,10 @@
 ### Fixes
 ### Deprecations
 
+## Version 1.1.0
+### Features
+- correct installation documentation
+
 ## Version 1.0.2
 ### Features
 - log errors correctly by building multiple dapps
