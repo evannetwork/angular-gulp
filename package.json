@@ -96,6 +96,7 @@
     "typescript": "^2.4.2"
   },
   "description": "Contractus project to handle dapp build processes (dapp-build, dapp-serve, ...).",
+  "homepage": "https://evannetwork.github.io/",
   "keywords": [
     "gulp",
     "javascript",
@@ -108,5 +109,9 @@
   ],
   "license": "AGPL-3.0-only",
   "name": "@evan.network/angular-gulp",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:evannetwork/angular-gulp.git"
+  },
   "version": "1.1.0"
 }
