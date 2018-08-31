@@ -2,6 +2,8 @@
 
 ## Next Version
 ### Features
+- add rollup babelify for a better browser support (=>, \`, ... class will be transformed)
+
 ### Fixes
 ### Deprecations
 

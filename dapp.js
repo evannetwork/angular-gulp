@@ -25,7 +25,7 @@
   https://evan.network/license/
 */
 
-const path = require('path');
+const babel = require('rollup-plugin-babel');
 const cleanCSS = require('gulp-clean-css');
 const commonjs = require('rollup-plugin-commonjs');
 const concat = require('gulp-concat');
@@ -37,14 +37,15 @@ const gulp = require('gulp');
 const gulpWatch = require('gulp-debounced-watch');
 const inlineResources = require('./inline-resources');
 const ngc = require('@angular/compiler/bundles/compiler.umd');
+const path = require('path');
 const plumber = require('gulp-plumber');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
 const resolve = require('rollup-plugin-node-resolve');
 const rollup = require('gulp-rollup');
-const rollupSourcemaps = require('rollup-plugin-sourcemaps');
 const rollupBuiltins = require('rollup-plugin-node-builtins');
 const rollupGlobals = require('rollup-plugin-node-globals');
+const rollupSourcemaps = require('rollup-plugin-sourcemaps');
 const runSequence = require('run-sequence');
 const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
@@ -171,7 +172,7 @@ gulp.task('rollup:umd', function () {
   }
 
   return gulp.src(`${buildFolder}/**/*.js`)
-  // transform the files here.
+    // transform the files here.
     .pipe(sourcemaps.init())
     .pipe(rollup({
 
@@ -216,6 +217,9 @@ gulp.task('rollup:umd', function () {
         }),
         rollupGlobals(),
         rollupBuiltins(),
+        babel({
+          exclude: 'node_modules/**'
+        })
         // analyze({ limit: 20 }),
         // cleanup()
         // rollupSourcemaps()
@@ -233,7 +237,7 @@ gulp.task('rollup:umd', function () {
 
     // fix ace is doing weird blob stuff
     // .pipe(replace(/if\ \(e\ instanceof\ window\.DOMException\)\ \{/g, 'if (true) {'))
-    
+
     // save file
     .pipe(rename(`${dappName}.js`))
     //´.pipe(sourcemaps.write(`.`,{includeContent: true, sourceRoot: `${dappRelativePath}`}))

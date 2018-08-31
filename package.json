@@ -76,6 +76,7 @@
     "request": "^2.83.0",
     "rollup": "^0.49.3",
     "rollup-analyzer-plugin": "^1.1.1",
+    "rollup-plugin-babel": "^4.0.2",
     "rollup-plugin-cleanup": "^3.0.0-beta.1",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-builtins": "^2.1.2",
