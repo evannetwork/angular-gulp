@@ -127,7 +127,7 @@ async function copyBlockchainCorebundles() {
 gulp.task('bc-build', async () => {
   await buildSubDApp(
     'node_modules/@evan.network/api-blockchain-core',
-    'npm run --max-old-space-size=8192 build-contracts',
+    'npm run build-contracts',
     copyBlockchainCorebundles
   );
   
@@ -137,13 +137,13 @@ gulp.task('bc-build', async () => {
       'node_modules/@evan.network/api-blockchain-core/node_modules/@evan.network/dbcp/src/**/*.ts',
       '!node_modules/@evan.network/api-blockchain-core/node_modules/@evan.network/dbcp/src/**/*.spec.ts'
     ],
-    'npm run --max-old-space-size=8192 build',
+    'npm run build',
     () => {
       // first run, don't build bundles, only if dbcp was changed, build the new bundles
       if (serveDapps) {
         return buildSubDApp(
           'node_modules/@evan.network/api-blockchain-core',
-          'npm run --max-old-space-size=8192 build-bundles',
+          'npm run build-bundles',
           copyBlockchainCorebundles
         );
       }
@@ -156,7 +156,7 @@ gulp.task('bc-build', async () => {
       'node_modules/@evan.network/api-blockchain-core/src/**/*.ts',
       '!node_modules/@evan.network/api-blockchain-core/src/**/*.spec.ts'
     ],
-    'npm run --max-old-space-size=8192 build-bundles',
+    'npm run build-bundles',
     copyBlockchainCorebundles
   );
 })
@@ -169,7 +169,7 @@ gulp.task('dapps-core-build', async () => {
       'node_modules/@evan.network/ui-angular-libs/dbcp.json',
       'node_modules/@evan.network/ui-angular-sass/src/ionic.scss'
     ], 
-    'npm run --max-old-space-size=8192 dapp-build node_modules/@evan.network/ui-angular-libs'
+    'npm run dapp-build node_modules/@evan.network/ui-angular-libs'
   );
 
   await serveSubDApp(
@@ -179,7 +179,7 @@ gulp.task('dapps-core-build', async () => {
       'node_modules/@evan.network/ui-angular-core/dbcp.json',
       'node_modules/@evan.network/ui-angular-sass/src/**/*'
     ], 
-    'npm run --max-old-space-size=8192 dapp-build node_modules/@evan.network/ui-angular-core'
+    'npm run dapp-build node_modules/@evan.network/ui-angular-core'
   );
 });
 
@@ -193,7 +193,7 @@ gulp.task('dapps-build', async () => {
         `${dappPath}/src/**/*`,
         `${dappPath}/dbcp.json`
       ], 
-      `npm run --max-old-space-size=8192 dapp-build "dapps/${dappPath.split('/').pop()}"`
+      `npm run dapp-build "dapps/${dappPath.split('/').pop()}"`
     );
   }
 });
