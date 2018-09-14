@@ -5,6 +5,11 @@
 ### Fixes
 ### Deprecations
 
+## Version 1.2.0
+### Features
+- add rollup babelify for a better browser support (=>, \`, ... class will be transformed)
+- copy js files into build folder for correct building
+
 ## Version 1.1.0
 ### Features
 - correct installation documentation
