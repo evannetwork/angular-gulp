@@ -161,6 +161,14 @@ gulp.task('ngc', function () {
 });
 
 /**
+ * 5. copy js files from the src folder into the 
+ */
+gulp.task('copy:build-js', function () {
+  return gulp.src([`${srcFolder}/**/*.js`, `!${srcFolder}/node_modules`])
+    .pipe(gulp.dest(buildFolder));
+});
+
+/**
  * 6. Run rollup inside the /build folder to generate our UMD module and place the
  *    generated file into the /dist folder
  */
@@ -426,6 +434,7 @@ gulp.task('compile', function () {
     'inline-resources',
     'ngc',
     'sass',
+    'copy:build-js',
     'rollup:umd',
     'concat-custom-js-libs',
     'copy:build',
