@@ -226,7 +226,7 @@ gulp.task('rollup:umd', function () {
         rollupGlobals(),
         rollupBuiltins(),
         babel({
-          exclude: 'node_modules/**'
+          exclude: [/node_modules/]
         })
         // analyze({ limit: 20 }),
         // cleanup()
