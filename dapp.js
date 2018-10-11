@@ -183,6 +183,9 @@ gulp.task('rollup:umd', function () {
     // transform the files here.
     .pipe(sourcemaps.init())
     .pipe(rollup({
+      onwarn: function(warning) {
+        // Skip certain warnings
+      },
 
       // Bundle's entry point
       // See "input" in https://rollupjs.org/#core-functionality

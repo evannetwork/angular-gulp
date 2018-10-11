@@ -3,6 +3,8 @@
 ## Next Version
 ### Features
 ### Fixes
+- remove warnings from angular build rollup
+
 ### Deprecations
 
 ## Version 1.2.0
