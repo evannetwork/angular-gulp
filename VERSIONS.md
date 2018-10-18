@@ -5,6 +5,10 @@
 ### Fixes
 ### Deprecations
 
+## Version 1.2.1
+### Fixes
+- remove warnings from angular build rollup
+
 ## Version 1.2.0
 ### Features
 - add rollup babelify for a better browser support (=>, \`, ... class will be transformed)
