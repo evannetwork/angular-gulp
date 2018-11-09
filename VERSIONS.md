@@ -5,6 +5,10 @@
 ### Fixes
 ### Deprecations
 
+## Version 1.2.2
+### Fixes
+- enable preferBuiltins
+
 ## Version 1.2.1
 ### Fixes
 - remove warnings from angular build rollup

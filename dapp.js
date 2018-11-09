@@ -222,7 +222,9 @@ gulp.task('rollup:umd', function () {
       },
 
       plugins:[
-        resolve(),
+        resolve({
+          preferBuiltins: true,
+        }),
         commonjs({
           // include: 'node_modules/angular-libs/node_modules/rxjs/**'
         }),
