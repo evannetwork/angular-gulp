@@ -3,6 +3,8 @@
 ## Next Version
 ### Features
 ### Fixes
+- enable preferBuiltins
+
 ### Deprecations
 
 ## Version 1.2.1
