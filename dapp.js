@@ -50,6 +50,7 @@ const runSequence = require('run-sequence');
 const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
 const tsc = require('gulp-typescript');
+const jsonPlugin = require('rollup-plugin-json');
 
 const runFolder = process.cwd();
 const dappRelativePath = process.argv[process.argv.indexOf('--dapp') + 1];
@@ -166,7 +167,35 @@ gulp.task('ngc', function () {
 gulp.task('copy:build-js', function () {
   return gulp.src([`${srcFolder}/**/*.js`, `!${srcFolder}/node_modules`])
     .pipe(gulp.dest(buildFolder));
-});
+})
+
+class ResolveRxjs {
+
+    resolveId(importee, importer) {
+        if (importee.startsWith('rxjs')) {
+            let pkg = importee.replace('rxjs', '');
+            if (importee.includes('/')) {
+                return `node_modules/rxjs/${pkg}.js`;
+            } else {
+                return `node_modules/rxjs//${pkg}.js`;
+            }
+        }
+    }
+}
+
+
+class ResolveAngular {
+    resolveId(importee, importer) {
+        if (importee.startsWith('@angular')) {
+            let pkg = importee.replace('@angular', '');
+            if (importee.split('/').length > 2) {
+                return `node_modules/${importee.split('/')[0]}/${importee.split('/')[1]}/fesm2015/${importee.split('/')[2]}.js`;
+            } else {
+                return `node_modules/${importee}/fesm2015${pkg}.js`;
+            }
+        }
+    }
+}
 
 /**
  * 6. Run rollup inside the /build folder to generate our UMD module and place the
@@ -222,17 +251,23 @@ gulp.task('rollup:umd', function () {
       },
 
       plugins:[
+        // new ResolveRxjs(),
+        // new ResolveAngular(),
+        jsonPlugin(),
         resolve({
           preferBuiltins: true,
+          module: true,
+          jsnext: true,
         }),
         commonjs({
-          // include: 'node_modules/angular-libs/node_modules/rxjs/**'
+          // include: 'node_modules/**'
         }),
         rollupGlobals(),
         rollupBuiltins(),
         babel({
+          plugins: ['transform-class-properties'],
           exclude: [/node_modules/]
-        })
+        }),
         // analyze({ limit: 20 }),
         // cleanup()
         // rollupSourcemaps()
