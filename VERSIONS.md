@@ -4,6 +4,7 @@
 ### Features
 ### Fixes
 - NodeJS 10 compatibility
+
 ### Deprecations
 
 ## Version 1.2.2
