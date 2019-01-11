@@ -5,6 +5,10 @@
 ### Fixes
 ### Deprecations
 
+## Version 1.2.3
+### Fixes
+- NodeJS 10 compatibility
+
 ## Version 1.2.2
 ### Fixes
 - enable preferBuiltins
