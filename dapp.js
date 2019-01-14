@@ -77,18 +77,19 @@ let rolloutExternals = [
 
 if (dappName !== 'angularlibs') {
   rolloutExternals = rolloutExternals.concat([
-    '@angular/core',
     '@angular/common',
-    '@angular/router',
+    '@angular/compiler',
+    '@angular/core',
     '@angular/platform-browser',
     '@angular/platform-browser-dynamic',
-    '@angular/compiler',
+    '@angular/router',
     '@ionic-native',
-    '@ionic-native/status-bar',
     '@ionic-native/splash-screen',
+    '@ionic-native/status-bar',
+    '@ionic/angular',
     'ionic-angular',
     'ionic-angular/bundles',
-    'rxjs'
+    'rxjs',
   ]);
 }
 
@@ -169,40 +170,107 @@ gulp.task('copy:build-js', function () {
     .pipe(gulp.dest(buildFolder));
 })
 
-class ResolveRxjs {
-
-    resolveId(importee, importer) {
-        if (importee.startsWith('rxjs')) {
-            let pkg = importee.replace('rxjs', '');
-            if (importee.includes('/')) {
-                return `node_modules/rxjs/${pkg}.js`;
-            } else {
-                return `node_modules/rxjs//${pkg}.js`;
-            }
-        }
-    }
-}
-
-
-class ResolveAngular {
-    resolveId(importee, importer) {
-        if (importee.startsWith('@angular')) {
-            let pkg = importee.replace('@angular', '');
-            if (importee.split('/').length > 2) {
-                return `node_modules/${importee.split('/')[0]}/${importee.split('/')[1]}/fesm2015/${importee.split('/')[2]}.js`;
-            } else {
-                return `node_modules/${importee}/fesm2015${pkg}.js`;
-            }
-        }
-    }
-}
-
 /**
  * 6. Run rollup inside the /build folder to generate our UMD module and place the
  *    generated file into the /dist folder
  */
 gulp.task('rollup:umd', function () {
   if (!fs.existsSync(`${buildFolder}/index.js`)) {
+    console.error('index.js not found, file will not be bundled');
+
+    return;
+  }
+
+  return gulp.src(`${buildFolder}/**/*.js`)
+    // transform the files here.
+    .pipe(sourcemaps.init())
+    .pipe(rollup({
+      onwarn: function(warning) {
+        // Skip certain warnings
+      },
+
+      // Bundle's entry point
+      // See "input" in https://rollupjs.org/#core-functionality
+      input: `${buildFolder}/index.js`,
+
+      // Allow mixing of hypothetical and actual files. "Actual" files can be files
+      // accessed by Rollup or produced by plugins further down the chain.
+      // This prevents errors like: 'path/file' does not exist in the hypothetical file system
+      // when subdirectories are used in the `src` directory.
+      allowRealFiles: true,
+
+      // A list of IDs of modules that should remain external to the bundle
+      // See "external" in https://rollupjs.org/#core-functionality
+      external: rolloutExternals,
+
+      // Format of generated bundle
+      // See "format" in https://rollupjs.org/#core-functionality
+      format: 'umd',
+
+      treeshake: true,
+
+      // Export mode to use
+      // See "exports" in https://rollupjs.org/#danger-zone
+      exports: 'named',
+
+      // The name to use for the module for UMD/IIFE bundles
+      // (required for bundles with exports)
+      // See "name" in https://rollupjs.org/#core-functionality
+      name: dappName,
+
+      // See "globals" in https://rollupjs.org/#core-functionality
+      globals: {
+        typescript: 'ts'
+      },
+
+      plugins:[
+        // new ResolveRxjs(),
+        // new ResolveAngular(),
+        jsonPlugin(),
+        resolve({
+          preferBuiltins: true,
+          module: true,
+          jsnext: true,
+        }),
+        commonjs({
+          // include: 'node_modules/**'
+        }),
+        rollupGlobals(),
+        rollupBuiltins(),
+        babel({
+          plugins: ['transform-class-properties'],
+          exclude: [/node_modules/]
+        }),
+        // analyze({ limit: 20 }),
+        // cleanup()
+        // rollupSourcemaps()
+      ]
+    }))
+
+    // remove ionic view handling errors 
+    .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
+    .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
+    .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
+    .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
+    .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
+    .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
+    .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
+
+    // fix ace is doing weird blob stuff
+    // .pipe(replace(/if\ \(e\ instanceof\ window\.DOMException\)\ \{/g, 'if (true) {'))
+
+    // save file
+    .pipe(rename(`${dappName}.js`))
+    //´.pipe(sourcemaps.write(`.`,{includeContent: true, sourceRoot: `${dappRelativePath}`}))
+    .pipe(gulp.dest(distFolder));
+});
+
+/**
+ * 6. Run rollup inside the /build folder to generate our UMD module and place the
+ *    generated file into the /dist folder
+ */
+gulp.task('rollup:ionic', function () {
+  if (!fs.existsSync(`./ionic/index.js`)) {
     console.error('index.js not found, file will not be bundled');
 
     return;
