@@ -93,7 +93,7 @@
     "tslint": "^5.7.0",
     "typescript": "^2.4.2"
   },
-  "description": "Contractus project to handle dapp build processes (dapp-build, dapp-serve, ...).",
+  "description": "evan project to handle angular dapps build processes (dapp-build, dapp-serve, ...).",
   "homepage": "https://evannetwork.github.io/",
   "keywords": [
     "gulp",
