@@ -2,6 +2,8 @@
 
 ## Next Version
 ### Features
+- Add seperated build job for `ui-angular-core-build` and `ui-angular-libs-build`
+
 ### Fixes
 ### Deprecations
 
