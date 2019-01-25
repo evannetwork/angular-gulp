@@ -50,6 +50,7 @@ const runSequence = require('run-sequence');
 const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
 const tsc = require('gulp-typescript');
+const strip = require('gulp-strip-comments');
 
 const runFolder = process.cwd();
 const dappRelativePath = process.argv[process.argv.indexOf('--dapp') + 1];
@@ -250,6 +251,9 @@ gulp.task('rollup:umd', function () {
 
     // fix ace is doing weird blob stuff
     // .pipe(replace(/if\ \(e\ instanceof\ window\.DOMException\)\ \{/g, 'if (true) {'))
+
+    // remove all comments
+    .pipe(strip())
 
     // save file
     .pipe(rename(`${dappName}.js`))
