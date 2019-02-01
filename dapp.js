@@ -209,19 +209,12 @@ gulp.task('rollup:umd', async function (callback) {
         '@babel/env',
       ],
       plugins: [
-        '@babel/plugin-transform-runtime'
+        '@babel/plugin-transform-runtime',
       ],
     })
-    .plugin(commonShake, { /* options */ })
     .bundle()
     .pipe(source(`index.js`))
     .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(sourcemaps.write('./', {
-      sourceMappingURL: function(file) {
-        return 'http://localhost:3000/external/' + file.relative + '.map';
-      }
-    }))
     // remove ionic view handling errors 
     .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
     .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
@@ -231,9 +224,15 @@ gulp.task('rollup:umd', async function (callback) {
     .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
     .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
     .pipe(rename(`${dappName}.js`))
+    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.write('./', {
+      sourceMappingURL: function(file) {
+        return 'http://localhost:3000/external/' + file.relative + '.map';
+      }
+    }))
     .pipe(gulp.dest(distFolder))
     .on('end', () => resolve())
-  )
+  );
 });
 
 /**
@@ -317,7 +316,7 @@ gulp.task('copy-dbcp-build-files', function () {
     if (dbcpConfig && dbcpConfig.dapp && dbcpConfig.dapp.files) {
       // copy all files that are configured within the dbcp configuration, all map files and the 
       // dbcp.json config
-      const filesToCopy = dbcpConfig.dapp.files.concat([ '*.js.map' ]);
+      const filesToCopy = dbcpConfig.dapp.files.concat([ `${ ensName }.js.map` ]);
       const destination = path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/runtime/external/${ensName}`);
 
       // delete old folder from external

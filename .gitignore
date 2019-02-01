@@ -40,3 +40,4 @@ documentation/
 
 package-lock.json
 build
+yarn.lock
