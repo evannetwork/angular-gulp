@@ -3,6 +3,7 @@
 ## Next Version
 ### Features
 - Add seperated build job for `ui-angular-core-build` and `ui-angular-libs-build`
+- use browserify and babel for building dapps
 
 ### Fixes
 ### Deprecations
