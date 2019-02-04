@@ -38,7 +38,6 @@ const gulp = require('gulp');
 const gulpReplace = require('gulp-replace');
 const gulpWatch = require('gulp-debounced-watch');
 const inlineResources = require('./inline-resources');
-const ngc = require('@angular/compiler/bundles/compiler.umd');
 const path = require('path');
 const plumber = require('gulp-plumber');
 const rename = require('gulp-rename');
@@ -153,9 +152,13 @@ gulp.task('ngc', function () {
         console.error('>>> [tsc] Typescript compilation failed'.bold.green);
         this.emit('end');
       }}))
-    .pipe(sourcemaps.init())
+    .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(tsc(tsConfig.compilerOptions))
-    .pipe(sourcemaps.write({includeContent: true}))
+    .pipe(sourcemaps.write('./', {
+      sourceMappingURL: function(file) {
+        return 'http://localhost:3000/external/' + file.relative + '.map';
+      }
+    }))
     .pipe(gulp.dest(buildFolder));
 });
 
@@ -224,7 +227,7 @@ gulp.task('rollup:umd', async function (callback) {
     .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
     .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
     .pipe(rename(`${dappName}.js`))
-    .pipe(sourcemaps.init({loadMaps: true}))
+    .pipe(sourcemaps.init({loadMaps: true, }))
     .pipe(sourcemaps.write('./', {
       sourceMappingURL: function(file) {
         return 'http://localhost:3000/external/' + file.relative + '.map';
