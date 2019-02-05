@@ -191,6 +191,7 @@ gulp.task('rollup:umd', async function (callback) {
     .external('angular-core')
     .external('bcc')
     .external('smart-contracts')
+    .external('task')
     .transform('babelify', {
       // compact everything
       compact: true,
