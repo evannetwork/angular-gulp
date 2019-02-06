@@ -181,62 +181,73 @@ gulp.task('rollup:umd', async function (callback) {
     return;
   }
 
-  await new Promise((resolve, reject) =>
-    browserify(`${buildFolder}/index.js`, {
-      standalone: dappName,
-      debug: true,
-    })
-    .external('dapp-browser')
-    .external('angular-libs')
-    .external('angular-core')
-    .external('bcc')
-    .external('smart-contracts')
-    .external('task')
-    .transform('babelify', {
-      // compact everything
-      compact: true,
-      // remove comments
-      comments: false,
-      //parse all sub node_modules es5 to es6 
-      global: true,
-      //important! 
-      ignore: [
-        // underscore gets broken when we try to parse it
-        /underscore/,
+  await new Promise((resolve, reject) => {
+    const buildJob = browserify(`${buildFolder}/index.js`, {
+        standalone: dappName,
+        debug: true,
+      })
+      .external('dapp-browser')
+      .external('angular-libs')
+      .external('angular-core')
+      .external('bcc')
+      .external('smart-contracts')
+      .external('task');
 
-        // remove core-js and babel runtime,
-        // https://github.com/babel/babel/issues/8731#issuecomment-426522500
-        /[\/\\]core-js/,
-        /@babel[\/\\]runtime/,
-      ],
-      presets: [
-        '@babel/env',
-      ],
-      plugins: [
-        '@babel/plugin-transform-runtime',
-      ],
-    })
-    .bundle()
-    .pipe(source(`index.js`))
-    .pipe(buffer())
-    // remove ionic view handling errors 
-    .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
-    .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
-    .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
-    .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
-    .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
-    .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
-    .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
-    .pipe(rename(`${dappName}.js`))
-    .pipe(sourcemaps.init({loadMaps: true, }))
-    .pipe(sourcemaps.write('./', {
-      sourceMappingURL: function(file) {
-        return 'http://localhost:3000/external/' + file.relative + '.map';
+    // mark tsconfig excludes as external
+    try {
+      tsConfig = require(`${ rootFolder }/tsconfig.json`);
+
+      if (tsConfig && tsConfig.exclude && Array.isArray(tsConfig.exclude)) {
+        tsConfig.exclude.forEach((exclude) => buildJob.external(exclude));
       }
-    }))
-    .pipe(gulp.dest(distFolder))
-    .on('end', () => resolve())
-  );
+    } catch(ex) { }
+
+    buildJob
+      .transform('babelify', {
+        // compact everything
+        compact: true,
+        // remove comments
+        comments: false,
+        //parse all sub node_modules es5 to es6 
+        global: true,
+        //important! 
+        ignore: [
+          // underscore gets broken when we try to parse it
+          /underscore/,
+
+          // remove core-js and babel runtime,
+          // https://github.com/babel/babel/issues/8731#issuecomment-426522500
+          /[\/\\]core-js/,
+          /@babel[\/\\]runtime/,
+        ],
+        presets: [
+          '@babel/env',
+        ],
+        plugins: [
+          '@babel/plugin-transform-runtime',
+        ],
+      })
+      .bundle()
+      .pipe(source(`index.js`))
+      .pipe(buffer())
+      // remove ionic view handling errors 
+      .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
+      .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
+      .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
+      .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
+      .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
+      .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
+      .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
+      .pipe(rename(`${dappName}.js`))
+      .pipe(sourcemaps.init({loadMaps: true, }))
+      .pipe(sourcemaps.write('./', {
+        sourceMappingURL: function(file) {
+          return 'http://localhost:3000/external/' + file.relative + '.map';
+        }
+      }))
+      .pipe(gulp.dest(distFolder))
+      .on('end', () => resolve())
+  });
 });
 
 /**
