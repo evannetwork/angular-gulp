@@ -193,6 +193,22 @@ gulp.task('rollup:umd', async function (callback) {
       .external('smart-contracts')
       .external('task');
 
+    if (dappName !== 'angularlibs') {
+      buildJob
+        .external('@angular/core')
+        .external('@angular/compiler')
+        .external('@angular/platform-browser')
+        .external('@angular/common')
+        .external('@angular/forms')
+        .external('rxjs')
+        .external('rxjs/BehaviorSubject')
+        .external('rxjs/Observable')
+        .external('rxjs/observable/merge')
+        .external('rxjs/operator/share')
+        .external('rxjs/Subject')
+        .external('rxjs/Subscription');
+    }
+
     // mark tsconfig excludes as external
     try {
       tsConfig = require(`${ rootFolder }/tsconfig.json`);
@@ -238,6 +254,7 @@ gulp.task('rollup:umd', async function (callback) {
       .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
       .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
       .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
+      .pipe(replace(/throw\ new\ Error\(\'Cannot\ enable\ prod\ mode\ after\ platform\ setup\.\'\)\;/g, ''))
       .pipe(rename(`${dappName}.js`))
       .pipe(sourcemaps.init({loadMaps: true, }))
       .pipe(sourcemaps.write('./', {
