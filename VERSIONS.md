@@ -7,6 +7,7 @@
 
 ### Fixes
 ### Deprecations
+- dapps folders need babel libs as peer dependencies
 
 ## Version 1.2.3
 ### Fixes
