@@ -99,6 +99,30 @@ async function serveSubDApp(cwd, watch, command, callback) {
   }
 };
 
+async function buildAngularLibs() {
+  await serveSubDApp(
+    './', 
+    [
+      'node_modules/@evan.network/ui-angular-libs/src/**/*',
+      'node_modules/@evan.network/ui-angular-libs/dbcp.json',
+      'node_modules/@evan.network/ui-angular-sass/src/ionic.scss'
+    ], 
+    'npm run dapp-build node_modules/@evan.network/ui-angular-libs'
+  );
+}
+
+async function buildAngularCore() {
+  await serveSubDApp(
+    './', 
+    [
+      'node_modules/@evan.network/ui-angular-core/src/**/*',
+      'node_modules/@evan.network/ui-angular-core/dbcp.json',
+      'node_modules/@evan.network/ui-angular-sass/src/**/*'
+    ], 
+    'npm run dapp-build node_modules/@evan.network/ui-angular-core'
+  );
+}
+
 async function copyBlockchainCorebundles() {
   await new Promise((resolve, reject) => {
     gulp.src([
@@ -162,25 +186,16 @@ gulp.task('bc-build', async () => {
 })
 
 gulp.task('dapps-core-build', async () => {
-  await serveSubDApp(
-    './', 
-    [
-      'node_modules/@evan.network/ui-angular-libs/src/**/*',
-      'node_modules/@evan.network/ui-angular-libs/dbcp.json',
-      'node_modules/@evan.network/ui-angular-sass/src/ionic.scss'
-    ], 
-    'npm run dapp-build node_modules/@evan.network/ui-angular-libs'
-  );
+  await buildAngularLibs();
+  await buildAngularCore();
+});
 
-  await serveSubDApp(
-    './', 
-    [
-      'node_modules/@evan.network/ui-angular-core/src/**/*',
-      'node_modules/@evan.network/ui-angular-core/dbcp.json',
-      'node_modules/@evan.network/ui-angular-sass/src/**/*'
-    ], 
-    'npm run dapp-build node_modules/@evan.network/ui-angular-core'
-  );
+gulp.task('ui-angular-core-build', async () => {
+  await buildAngularCore();
+});
+
+gulp.task('ui-angular-libs-build', async () => {
+  await buildAngularLibs();
 });
 
 gulp.task('dapps-build', async () => {

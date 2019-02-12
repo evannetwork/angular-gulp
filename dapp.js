@@ -25,30 +25,28 @@
   https://evan.network/license/
 */
 
-const babel = require('rollup-plugin-babel');
+const browserify = require('browserify');
+const buffer = require('vinyl-buffer');
 const cleanCSS = require('gulp-clean-css');
-const commonjs = require('rollup-plugin-commonjs');
+const commonShake = require('common-shakeify');
 const concat = require('gulp-concat');
 const cssBase64 = require('gulp-css-base64');
 const del = require('del');
 const exec = require('child_process').exec;
 const fs = require('fs');
 const gulp = require('gulp');
+const gulpReplace = require('gulp-replace');
 const gulpWatch = require('gulp-debounced-watch');
 const inlineResources = require('./inline-resources');
-const ngc = require('@angular/compiler/bundles/compiler.umd');
 const path = require('path');
 const plumber = require('gulp-plumber');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
-const resolve = require('rollup-plugin-node-resolve');
-const rollup = require('gulp-rollup');
-const rollupBuiltins = require('rollup-plugin-node-builtins');
-const rollupGlobals = require('rollup-plugin-node-globals');
-const rollupSourcemaps = require('rollup-plugin-sourcemaps');
 const runSequence = require('run-sequence');
 const sass = require('gulp-sass');
+const source = require('vinyl-source-stream');
 const sourcemaps = require('gulp-sourcemaps');
+const strip = require('gulp-strip-comments');
 const tsc = require('gulp-typescript');
 
 const runFolder = process.cwd();
@@ -154,9 +152,13 @@ gulp.task('ngc', function () {
         console.error('>>> [tsc] Typescript compilation failed'.bold.green);
         this.emit('end');
       }}))
-    .pipe(sourcemaps.init())
+    .pipe(sourcemaps.init({ loadMaps: true }))
     .pipe(tsc(tsConfig.compilerOptions))
-    .pipe(sourcemaps.write({includeContent: true}))
+    .pipe(sourcemaps.write('./', {
+      sourceMappingURL: function(file) {
+        return 'http://localhost:3000/external/' + file.relative + '.map';
+      }
+    }))
     .pipe(gulp.dest(buildFolder));
 });
 
@@ -172,89 +174,97 @@ gulp.task('copy:build-js', function () {
  * 6. Run rollup inside the /build folder to generate our UMD module and place the
  *    generated file into the /dist folder
  */
-gulp.task('rollup:umd', function () {
+gulp.task('rollup:umd', async function (callback) {
   if (!fs.existsSync(`${buildFolder}/index.js`)) {
     console.error('index.js not found, file will not be bundled');
 
     return;
   }
 
-  return gulp.src(`${buildFolder}/**/*.js`)
-    // transform the files here.
-    .pipe(sourcemaps.init())
-    .pipe(rollup({
-      onwarn: function(warning) {
-        // Skip certain warnings
-      },
+  await new Promise((resolve, reject) => {
+    const buildJob = browserify(`${buildFolder}/index.js`, {
+        standalone: dappName,
+        debug: true,
+      })
+      .external('dapp-browser')
+      .external('angular-libs')
+      .external('angular-core')
+      .external('bcc')
+      .external('smart-contracts')
+      .external('task');
 
-      // Bundle's entry point
-      // See "input" in https://rollupjs.org/#core-functionality
-      input: `${buildFolder}/index.js`,
+    if (dappName !== 'angularlibs') {
+      buildJob
+        .external('@angular/core')
+        .external('@angular/compiler')
+        .external('@angular/platform-browser')
+        .external('@angular/common')
+        .external('@angular/forms')
+        .external('rxjs')
+        .external('rxjs/BehaviorSubject')
+        .external('rxjs/Observable')
+        .external('rxjs/observable/merge')
+        .external('rxjs/operator/share')
+        .external('rxjs/Subject')
+        .external('rxjs/Subscription');
+    }
 
-      // Allow mixing of hypothetical and actual files. "Actual" files can be files
-      // accessed by Rollup or produced by plugins further down the chain.
-      // This prevents errors like: 'path/file' does not exist in the hypothetical file system
-      // when subdirectories are used in the `src` directory.
-      allowRealFiles: true,
+    // mark tsconfig excludes as external
+    try {
+      tsConfig = require(`${ rootFolder }/tsconfig.json`);
 
-      // A list of IDs of modules that should remain external to the bundle
-      // See "external" in https://rollupjs.org/#core-functionality
-      external: rolloutExternals,
+      if (tsConfig && tsConfig.exclude && Array.isArray(tsConfig.exclude)) {
+        tsConfig.exclude.forEach((exclude) => buildJob.external(exclude));
+      }
+    } catch(ex) { }
 
-      // Format of generated bundle
-      // See "format" in https://rollupjs.org/#core-functionality
-      format: 'umd',
+    buildJob
+      .transform('babelify', {
+        // compact everything
+        compact: true,
+        // remove comments
+        comments: false,
+        //parse all sub node_modules es5 to es6 
+        global: true,
+        //important! 
+        ignore: [
+          // underscore gets broken when we try to parse it
+          /underscore/,
 
-      treeshake: true,
-
-      // Export mode to use
-      // See "exports" in https://rollupjs.org/#danger-zone
-      exports: 'named',
-
-      // The name to use for the module for UMD/IIFE bundles
-      // (required for bundles with exports)
-      // See "name" in https://rollupjs.org/#core-functionality
-      name: dappName,
-
-      // See "globals" in https://rollupjs.org/#core-functionality
-      globals: {
-        typescript: 'ts'
-      },
-
-      plugins:[
-        resolve({
-          preferBuiltins: true,
-        }),
-        commonjs({
-          // include: 'node_modules/angular-libs/node_modules/rxjs/**'
-        }),
-        rollupGlobals(),
-        rollupBuiltins(),
-        babel({
-          exclude: [/node_modules/]
-        })
-        // analyze({ limit: 20 }),
-        // cleanup()
-        // rollupSourcemaps()
-      ]
-    }))
-
-    // remove ionic view handling errors 
-    .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
-    .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
-    .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
-    .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
-    .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
-    .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
-    .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
-
-    // fix ace is doing weird blob stuff
-    // .pipe(replace(/if\ \(e\ instanceof\ window\.DOMException\)\ \{/g, 'if (true) {'))
-
-    // save file
-    .pipe(rename(`${dappName}.js`))
-    //´.pipe(sourcemaps.write(`.`,{includeContent: true, sourceRoot: `${dappRelativePath}`}))
-    .pipe(gulp.dest(distFolder));
+          // remove core-js and babel runtime,
+          // https://github.com/babel/babel/issues/8731#issuecomment-426522500
+          /[\/\\]core-js/,
+          /@babel[\/\\]runtime/,
+        ],
+        presets: [
+          '@babel/env',
+        ],
+        plugins: [
+          '@babel/plugin-transform-runtime',
+        ],
+      })
+      .bundle()
+      .pipe(source(`index.js`))
+      .pipe(buffer())
+      // remove ionic view handling errors 
+      .pipe(replace(/throw \'invalid views to insert\'\;/g, 'viewControllers = [ ];'))
+      .pipe(replace(/throw \'no views in the stack to be removed\'\;/g, 'return true;'))
+      .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
+      .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
+      .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
+      .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
+      .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
+      .pipe(replace(/throw\ new\ Error\(\'Cannot\ enable\ prod\ mode\ after\ platform\ setup\.\'\)\;/g, ''))
+      .pipe(rename(`${dappName}.js`))
+      .pipe(sourcemaps.init({loadMaps: true, }))
+      .pipe(sourcemaps.write('./', {
+        sourceMappingURL: function(file) {
+          return 'http://localhost:3000/external/' + file.relative + '.map';
+        }
+      }))
+      .pipe(gulp.dest(distFolder))
+      .on('end', () => resolve())
+  });
 });
 
 /**
@@ -338,7 +348,7 @@ gulp.task('copy-dbcp-build-files', function () {
     if (dbcpConfig && dbcpConfig.dapp && dbcpConfig.dapp.files) {
       // copy all files that are configured within the dbcp configuration, all map files and the 
       // dbcp.json config
-      const filesToCopy = dbcpConfig.dapp.files.concat([ '*.js.map' ]);
+      const filesToCopy = dbcpConfig.dapp.files.concat([ `${ ensName }.js.map` ]);
       const destination = path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/runtime/external/${ensName}`);
 
       // delete old folder from external
