@@ -252,6 +252,7 @@ gulp.task('rollup:umd', async function (callback) {
       .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
       .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
       .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
+      .pipe(replace(/if\(shouldRunGuardsAndResolvers\)\{/g, 'if(shouldRunGuardsAndResolvers&&context.outlet){'))
       .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
       .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
       .pipe(replace(/throw\ new\ Error\(\'Cannot\ enable\ prod\ mode\ after\ platform\ setup\.\'\)\;/g, ''))
