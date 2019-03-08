@@ -113,7 +113,7 @@ async function buildAngularLibs() {
 
 async function buildAngularCore() {
   await serveSubDApp(
-    './', 
+    './',
     [
       'node_modules/@evan.network/ui-angular-core/src/**/*',
       'node_modules/@evan.network/ui-angular-core/dbcp.json',

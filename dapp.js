@@ -60,35 +60,6 @@ const buildFolder = path.join(rootFolder, 'build');
 const distFolder = path.join(rootFolder, 'dist');
 const devDappFolder = path.join(rootFolder, '..', '..', 'ui-dapp-browser', 'runtime', 'external');
 
-let rolloutExternals = [
-  'bcc-bc',
-  'bcc',
-  'bcc-profile',
-  'angular-core',
-  'angular-libs',
-  'angularcore',
-  'angularlibs',
-  'dapp-browser',
-  'smart-contracts'
-];
-
-if (dappName !== 'angularlibs') {
-  rolloutExternals = rolloutExternals.concat([
-    '@angular/core',
-    '@angular/common',
-    '@angular/router',
-    '@angular/platform-browser',
-    '@angular/platform-browser-dynamic',
-    '@angular/compiler',
-    '@ionic-native',
-    '@ionic-native/status-bar',
-    '@ionic-native/splash-screen',
-    'ionic-angular',
-    'ionic-angular/bundles',
-    'rxjs'
-  ]);
-}
-
 /**
  * 1. Delete /dist folder
  */
@@ -186,10 +157,16 @@ gulp.task('rollup:umd', async function (callback) {
         standalone: dappName,
         debug: true,
       })
-      .external('dapp-browser')
-      .external('angular-libs')
+      .external('@evan.network/ui-dapp-browser')
+      .external('@evan.network/api-blockchain-core')
+      .external('@evan.network/api-signer-ledger')
+      .external('@evan.network/smart-contracts-core')
+      .external('@evan.network/ui-angular-core')
+      .external('@evan.network/ui-angular-libs')
       .external('angular-core')
+      .external('angular-libs')
       .external('bcc')
+      .external('dapp-browser')
       .external('smart-contracts')
       .external('task');
 
