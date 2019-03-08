@@ -182,6 +182,7 @@ gulp.task('rollup:umd', async function (callback) {
         .external('rxjs/Observable')
         .external('rxjs/observable/merge')
         .external('rxjs/operator/share')
+        .external('rxjs/operators')
         .external('rxjs/Subject')
         .external('rxjs/Subscription');
     }
