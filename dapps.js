@@ -117,7 +117,8 @@ async function buildAngularCore() {
     [
       'node_modules/@evan.network/ui-angular-core/src/**/*',
       'node_modules/@evan.network/ui-angular-core/dbcp.json',
-      'node_modules/@evan.network/ui-angular-sass/src/**/*'
+      'node_modules/@evan.network/ui-angular-sass/src/**/*',
+      '!node_modules/@evan.network/ui-angular-sass/src/ionic.scss'
     ], 
     'npm run dapp-build node_modules/@evan.network/ui-angular-core'
   );
