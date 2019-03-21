@@ -3,6 +3,8 @@
 ## Next Version
 ### Features
 ### Fixes
+- include angular-sass as base64Css directory to correctly include base image styles
+
 ### Deprecations
 
 

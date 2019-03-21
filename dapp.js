@@ -417,6 +417,7 @@ gulp.task('sass', function () {
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : `dapps/${rootFolder}/src` }))
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : '../node_modules/ionic-angular/fonts' }))
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : '../node_modules/@evan.network/ui-angular-libs/node_modules/ionic-angular/fonts' }))
+    .pipe(cssBase64({ maxWeightResource: 1000000, baseDir : '../node_modules/@evan.network/ui-angular-sass' }))
     .pipe(gulp.dest(distFolder));
 });
 
