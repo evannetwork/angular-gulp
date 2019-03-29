@@ -254,9 +254,10 @@ gulp.task('concat-custom-js-libs', function() {
     .src([
       `${distFolder}/${dappName}.js`,
       `${rootFolder}/src/**/*.js`
-    ])
+    ], { allowEmpty: true })
     .pipe(concat(`${dappName}.js`))
-    .pipe(gulp.dest(distFolder));
+    .pipe(gulp.dest(distFolder))
+    .on('error', (ex) => console.log(ex))
 });
 
 /**
@@ -266,22 +267,6 @@ gulp.task('concat-custom-js-libs', function() {
  */
 gulp.task('copy:build', function () {
   return gulp.src([`${buildFolder}/**/*`, `!${buildFolder}/**/*.js`])
-    .pipe(gulp.dest(distFolder));
-});
-
-/**
- * 8. Copy package.json from /src to /dist
- */
-gulp.task('copy:manifest', function () {
-  return gulp.src([`${srcFolder}/package.json`])
-    .pipe(gulp.dest(distFolder));
-});
-
-/**
- * 9. Copy README.md from / to /dist
- */
-gulp.task('copy:readme', function () {
-  return gulp.src([path.join(rootFolder, 'README.MD')])
     .pipe(gulp.dest(distFolder));
 });
 
@@ -433,8 +418,6 @@ gulp.task('compile', function () {
     'rollup:umd',
     'concat-custom-js-libs',
     'copy:build',
-    'copy:manifest',
-    'copy:readme',
     'copy-images',
     'clean:build',
     'clean:tmp',
