@@ -60,35 +60,6 @@ const buildFolder = path.join(rootFolder, 'build');
 const distFolder = path.join(rootFolder, 'dist');
 const devDappFolder = path.join(rootFolder, '..', '..', 'ui-dapp-browser', 'runtime', 'external');
 
-let rolloutExternals = [
-  'bcc-bc',
-  'bcc',
-  'bcc-profile',
-  'angular-core',
-  'angular-libs',
-  'angularcore',
-  'angularlibs',
-  'dapp-browser',
-  'smart-contracts'
-];
-
-if (dappName !== 'angularlibs') {
-  rolloutExternals = rolloutExternals.concat([
-    '@angular/core',
-    '@angular/common',
-    '@angular/router',
-    '@angular/platform-browser',
-    '@angular/platform-browser-dynamic',
-    '@angular/compiler',
-    '@ionic-native',
-    '@ionic-native/status-bar',
-    '@ionic-native/splash-screen',
-    'ionic-angular',
-    'ionic-angular/bundles',
-    'rxjs'
-  ]);
-}
-
 /**
  * 1. Delete /dist folder
  */
@@ -186,10 +157,16 @@ gulp.task('rollup:umd', async function (callback) {
         standalone: dappName,
         debug: true,
       })
-      .external('dapp-browser')
-      .external('angular-libs')
+      .external('@evan.network/ui-dapp-browser')
+      .external('@evan.network/api-blockchain-core')
+      .external('@evan.network/api-signer-ledger')
+      .external('@evan.network/smart-contracts-core')
+      .external('@evan.network/ui-angular-core')
+      .external('@evan.network/ui-angular-libs')
       .external('angular-core')
+      .external('angular-libs')
       .external('bcc')
+      .external('dapp-browser')
       .external('smart-contracts')
       .external('task');
 
@@ -205,6 +182,7 @@ gulp.task('rollup:umd', async function (callback) {
         .external('rxjs/Observable')
         .external('rxjs/observable/merge')
         .external('rxjs/operator/share')
+        .external('rxjs/operators')
         .external('rxjs/Subject')
         .external('rxjs/Subscription');
     }
@@ -252,6 +230,7 @@ gulp.task('rollup:umd', async function (callback) {
       .pipe(replace(/ti\.reject\(rejectReason\)\;/g, ''))
       .pipe(replace(/console.warn\("You(.*)\n(.*)root\ page\'\;/g, 'return;'))
       .pipe(replace(/if\ \(shouldRunGuardsAndResolvers\)\ \{/g, 'if (shouldRunGuardsAndResolvers && context.outlet) {'))
+      .pipe(replace(/if\(shouldRunGuardsAndResolvers\)\{/g, 'if(shouldRunGuardsAndResolvers&&context.outlet){'))
       .pipe(replace(/if\ \(isElementNode\(element\)\)\ \{/g, 'if (isElementNode(element) && this._fetchNamespace(namespaceId)) {'))
       .pipe(replace(/throw\ new\ Error\(\'Cannot\ activate\ an\ already\ activated\ outlet\'\)\;/g, ''))
       .pipe(replace(/throw\ new\ Error\(\'Cannot\ enable\ prod\ mode\ after\ platform\ setup\.\'\)\;/g, ''))
@@ -275,9 +254,10 @@ gulp.task('concat-custom-js-libs', function() {
     .src([
       `${distFolder}/${dappName}.js`,
       `${rootFolder}/src/**/*.js`
-    ])
+    ], { allowEmpty: true })
     .pipe(concat(`${dappName}.js`))
-    .pipe(gulp.dest(distFolder));
+    .pipe(gulp.dest(distFolder))
+    .on('error', (ex) => console.log(ex))
 });
 
 /**
@@ -287,22 +267,6 @@ gulp.task('concat-custom-js-libs', function() {
  */
 gulp.task('copy:build', function () {
   return gulp.src([`${buildFolder}/**/*`, `!${buildFolder}/**/*.js`])
-    .pipe(gulp.dest(distFolder));
-});
-
-/**
- * 8. Copy package.json from /src to /dist
- */
-gulp.task('copy:manifest', function () {
-  return gulp.src([`${srcFolder}/package.json`])
-    .pipe(gulp.dest(distFolder));
-});
-
-/**
- * 9. Copy README.md from / to /dist
- */
-gulp.task('copy:readme', function () {
-  return gulp.src([path.join(rootFolder, 'README.MD')])
     .pipe(gulp.dest(distFolder));
 });
 
@@ -438,6 +402,7 @@ gulp.task('sass', function () {
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : `dapps/${rootFolder}/src` }))
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : '../node_modules/ionic-angular/fonts' }))
     .pipe(cssBase64({ maxWeightResource: 228000, baseDir : '../node_modules/@evan.network/ui-angular-libs/node_modules/ionic-angular/fonts' }))
+    .pipe(cssBase64({ maxWeightResource: 1000000, baseDir : '../node_modules/@evan.network/ui-angular-sass' }))
     .pipe(gulp.dest(distFolder));
 });
 
@@ -453,8 +418,6 @@ gulp.task('compile', function () {
     'rollup:umd',
     'concat-custom-js-libs',
     'copy:build',
-    'copy:manifest',
-    'copy:readme',
     'copy-images',
     'clean:build',
     'clean:tmp',
