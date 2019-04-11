@@ -3,9 +3,12 @@
 ## Next Version
 ### Features
 ### Fixes
-- include angular-sass as base64Css directory to correctly include base image styles
-
 ### Deprecations
+
+## 2.1.0
+### Fixes
+- include angular-sass as base64Css directory to correctly include base image styles
+- Use static glob-stream version
 
 
 ## Version 2.0.0
