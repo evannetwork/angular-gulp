@@ -5,7 +5,13 @@
 ### Fixes
 ### Deprecations
 
-## 2.1.0
+
+## Version 2.1.1
+### Fixes
+- add missing `{ allowEmpty: true }` flags for dapps without typescript files
+
+
+## Version 2.1.0
 ### Fixes
 - include angular-sass as base64Css directory to correctly include base image styles
 - Use static glob-stream version

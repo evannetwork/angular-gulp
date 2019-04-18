@@ -117,7 +117,7 @@ gulp.task('ngc', function () {
     .src([
       `${rootFolder}/.tmp/**/*.ts`,
       `!${rootFolder}/.tmp/**/*.spec.ts`
-    ])
+    ], { allowEmpty: true })
     .pipe(plumber({
       errorHandler: function (err) {
         console.error('>>> [tsc] Typescript compilation failed'.bold.green);
@@ -342,7 +342,7 @@ gulp.task('copy-dbcp-build-files', function () {
           }
 
           await new Promise((resolve, reject) => gulp
-            .src(originalFilePath)
+            .src(originalFilePath, { allowEmpty: true })
             .pipe(gulp.dest(path.resolve(`${ destination }${ destinationSubFolder }`)))
             .on('end', () => resolve())
           )
