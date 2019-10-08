@@ -4,15 +4,13 @@
 ### Features
 
 ### Fixes
-- remove custom agpl appendix
 
 ### Deprecations
 
 
-## 2.1.0
+## Version 2.1.2
 ### Fixes
-- include angular-sass as base64Css directory to correctly include base image styles
-- Use static glob-stream version
+- remove custom agpl appendix
 
 
 ## Version 2.1.1
@@ -24,6 +22,7 @@
 ### Fixes
 - include angular-sass as base64Css directory to correctly include base image styles
 - Use static glob-stream version
+
 
 ## Version 2.0.0
 ### Features
