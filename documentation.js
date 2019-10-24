@@ -42,7 +42,7 @@ gulp.task('concat-readme', function() {
     .pipe(gulp.dest(documentationFolder));
 });
 
-gulp.task('build-doc', [ 'concat-readme' ], function() {
+gulp.task('build-doc', gulp.series([ 'concat-readme' ]), function() {
   process.chdir(path.resolve(documentationFolder));
 
   console.dir(projectFolders
