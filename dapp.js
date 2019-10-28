@@ -86,7 +86,7 @@ gulp.task('inline-resources', function () {
  *
  *    As of Angular 5, ngc accepts an array and no longer returns a promise.
  */
-gulp.task('ngc', function () {
+gulp.task('ngc', function (callback) {
   process.chdir(path.resolve(`${ rootFolder }`))
 
   let tsConfig;
@@ -96,7 +96,7 @@ gulp.task('ngc', function () {
   } catch(ex) {
     console.error('ts config not found, ngc will not run');
 
-    return;
+    return callback();
   }
 
   tsConfig.compilerOptions.rootDir = `${ rootFolder }/.tmp`;
