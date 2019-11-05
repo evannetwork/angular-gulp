@@ -34,7 +34,6 @@ const path = require('path');
 const plumber = require('gulp-plumber');
 const rename = require('gulp-rename');
 const replace = require('gulp-replace');
-const runSequence = require('run-sequence');
 const sass = require('gulp-sass');
 const source = require('vinyl-source-stream');
 const sourcemaps = require('gulp-sourcemaps');
@@ -87,7 +86,7 @@ gulp.task('inline-resources', function () {
  *
  *    As of Angular 5, ngc accepts an array and no longer returns a promise.
  */
-gulp.task('ngc', function () {
+gulp.task('ngc', function (callback) {
   process.chdir(path.resolve(`${ rootFolder }`))
 
   let tsConfig;
@@ -97,7 +96,7 @@ gulp.task('ngc', function () {
   } catch(ex) {
     console.error('ts config not found, ngc will not run');
 
-    return;
+    return callback();
   }
 
   tsConfig.compilerOptions.rootDir = `${ rootFolder }/.tmp`;
@@ -398,8 +397,8 @@ gulp.task('sass', function () {
     .pipe(gulp.dest(distFolder));
 });
 
-gulp.task('compile', function () {
-  runSequence(
+gulp.task('compile',
+  gulp.series([
     'clean:tmp',
     'clean:dist',
     'copy:source',
@@ -414,15 +413,16 @@ gulp.task('compile', function () {
     'clean:build',
     'clean:tmp',
     'copy-dbcp-build-files',
-    function (err) {
-      if (err) {
-        console.log('ERROR:', err.message);
-        deleteFolders([distFolder, tmpFolder, buildFolder]);
-      } else {
-        console.log('Compilation finished succesfully');
-      }
-    });
-});
+  ]),
+  function (err) {
+    if (err) {
+      console.log('ERROR:', err.message);
+      deleteFolders([distFolder, tmpFolder, buildFolder]);
+    } else {
+      console.log('Compilation finished succesfully');
+    }
+  }
+);
 
 /**
  * Watch for any change in the /src folder and compile files
@@ -431,13 +431,11 @@ gulp.task('watch', function () {
   gulpWatch(`${srcFolder}/**/*`, ['compile']);
 });
 
-gulp.task('clean', ['clean:dist', 'clean:tmp', 'clean:build']);
-
-gulp.task('build', ['clean', 'compile']);
-gulp.task('build:watch', ['build', 'compile', 'watch']);
-gulp.task('default', ['build:watch']);
-
-gulp.task('serve', ['clean', 'compile', 'watch']);
+gulp.task('clean', gulp.series(['clean:dist', 'clean:tmp', 'clean:build']));
+gulp.task('build', gulp.series(['clean', 'compile']));
+gulp.task('build:watch', gulp.series(['build', 'compile', 'watch']));
+gulp.task('default', gulp.series(['build:watch']));
+gulp.task('serve', gulp.series(['clean', 'compile', 'watch']));
 
 /**
  * Deletes the specified folder

@@ -8,6 +8,11 @@
 ### Deprecations
 
 
+## Version 2.1.3
+### Fixes
+- update gulp build scripts to be compatible node 12
+
+
 ## Version 2.1.2
 ### Fixes
 - remove custom agpl appendix
