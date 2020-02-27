@@ -49,7 +49,7 @@ const srcFolder = path.join(rootFolder, 'src');
 const tmpFolder = path.join(rootFolder, '.tmp');
 const buildFolder = path.join(rootFolder, 'build');
 const distFolder = path.join(rootFolder, 'dist');
-const devDappFolder = path.join(rootFolder, '..', '..', 'ui-dapp-browser', 'runtime', 'external');
+const devDappFolder = path.join(rootFolder, '..', '..', 'ui-dapp-browser', 'dist', 'dapps');
 
 /**
  * 1. Delete /dist folder
@@ -118,7 +118,7 @@ gulp.task('ngc', function (callback) {
     .pipe(tsc(tsConfig.compilerOptions))
     .pipe(sourcemaps.write('./', {
       sourceMappingURL: function(file) {
-        return 'http://localhost:3000/external/' + file.relative + '.map';
+        return 'http://localhost:3000/dapps/' + file.relative + '.map';
       }
     }))
     .pipe(gulp.dest(buildFolder));
@@ -229,7 +229,7 @@ gulp.task('rollup:umd', async function (callback) {
       .pipe(sourcemaps.init({loadMaps: true, }))
       .pipe(sourcemaps.write('./', {
         sourceMappingURL: function(file) {
-          return 'http://localhost:3000/external/' + file.relative + '.map';
+          return 'http://localhost:3000/dapps/' + file.relative + '.map';
         }
       }))
       .pipe(gulp.dest(distFolder))
@@ -304,11 +304,11 @@ gulp.task('copy-dbcp-build-files', function () {
       // copy all files that are configured within the dbcp configuration, all map files and the 
       // dbcp.json config
       const filesToCopy = dbcpConfig.dapp.files.concat([ `${ ensName }.js.map` ]);
-      const destination = path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/runtime/external/${ensName}`);
+      const destination = path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/dist/dapps/${ensName}`);
 
       // delete old folder from external
       return deleteFolders([
-        path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/runtime/external/${ensName}/**`)
+        path.resolve(`${runFolder}/node_modules/@evan.network/ui-dapp-browser/dist/dapps/${ensName}/**`)
       ])
       .then(() => new Promise((resolve, reject) => gulp
         .src(path.join(rootFolder, `dbcp.json`))
@@ -344,7 +344,7 @@ gulp.task('copy-dbcp-build-files', function () {
           dbcpPath: `${rootFolder}/dbcp.json`
         }
         fs.writeFileSync(
-          `${runFolder}/node_modules/@evan.network/ui-dapp-browser/runtime/external/${ensName}/dbcpPath.json`,
+          `${runFolder}/node_modules/@evan.network/ui-dapp-browser/dist/dapps/${ensName}/dbcpPath.json`,
           JSON.stringify(dbcp)
         )
       })
